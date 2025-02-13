@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_list_app/data/dummy_items.dart';
+import 'package:shopping_list_app/model/grocery_item.dart';
 import 'package:shopping_list_app/widgets/new_item.dart';
 
 class GroceryList extends StatefulWidget {
@@ -10,12 +10,20 @@ class GroceryList extends StatefulWidget {
 }
 
 class _GroceryListState extends State<GroceryList> {
-  void _addItem() {
-    Navigator.of(context).push(
+  final List<GroceryItem> _groceryItems = [];
+
+  void _addItem() async {
+    final newItem = await Navigator.of(context).push<GroceryItem>(
       MaterialPageRoute(
         builder: (ctx) => const NewItem(),
       ),
     );
+    if (newItem == null) {
+      return;
+    }
+    setState(() {
+      _groceryItems.add(newItem);
+    });
   }
 
   @override
@@ -30,20 +38,52 @@ class _GroceryListState extends State<GroceryList> {
           )
         ],
       ),
-      body: ListView.builder(
-        itemCount: groceryItems.length,
-        itemBuilder: (ctx, index) => ListTile(
-          title: Text(groceryItems[index].name),
-          leading: Container(
-            width: 24,
-            height: 24,
-            color: groceryItems[index].category.color,
-          ),
-          trailing: Text(
-            groceryItems[index].quantity.toString(),
-          ),
-        ),
-      ),
+      body: _groceryItems.isEmpty
+          ? const Center(
+              child: Text(
+                'No items in the list. Start adding some!',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            )
+          : ListView.builder(
+              itemCount: _groceryItems.length,
+              itemBuilder: (ctx, index) {
+                final item = _groceryItems[index];
+                return Dismissible(
+                  key: ValueKey(item.id), // Unique key for each item
+                  direction:
+                      DismissDirection.endToStart, // Swipe from right to left
+                  background: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  onDismissed: (direction) {
+                    setState(() {
+                      _groceryItems.removeAt(index);
+                    });
+
+                    // Optionally, show a Snackbar
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${item.name} removed'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  child: ListTile(
+                    title: Text(item.name),
+                    leading: Container(
+                      width: 24,
+                      height: 24,
+                      color: item.category.color,
+                    ),
+                    trailing: Text(item.quantity.toString()),
+                  ),
+                );
+              },
+            ),
     );
   }
 }
