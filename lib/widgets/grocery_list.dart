@@ -33,6 +33,7 @@ class _GroceryListState extends State<GroceryList> {
         _error = 'Failed to fetch data. Please try again later';
       });
     }
+
     final Map<String, dynamic> listData = json.decode(response.body);
     final List<GroceryItem> loadedItems = [];
     for (final item in listData.entries) {
@@ -47,6 +48,7 @@ class _GroceryListState extends State<GroceryList> {
             category: category),
       );
     }
+
     setState(() {
       _groceryItems = loadedItems;
       _isLoading = false;
@@ -76,7 +78,7 @@ class _GroceryListState extends State<GroceryList> {
       _groceryItems.remove(item);
     });
 
-    final url = Uri.https('futter-prep-119b2-default-rtdb.firebaseio.com',
+    final url = Uri.https('flutter-prep-119b2-default-rtdb.firebaseio.com',
         '/shopping-list/${item.id}.json');
 
     final response = await http.delete(url);
@@ -159,15 +161,16 @@ class _GroceryListState extends State<GroceryList> {
     }
 
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Your Groceries'),
-          actions: [
-            IconButton(
-              onPressed: _addItem,
-              icon: const Icon(Icons.add),
-            )
-          ],
-        ),
-        body: content);
+      appBar: AppBar(
+        title: const Text('Your Groceries'),
+        actions: [
+          IconButton(
+            onPressed: _addItem,
+            icon: const Icon(Icons.add),
+          )
+        ],
+      ),
+      body: content,
+    );
   }
 }
